@@ -1,54 +1,53 @@
 package com.app.journalApp.config;
 
 import com.app.journalApp.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-@EnableWebSecurity
 public class SpringSecurity {
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
+    public SpringSecurity(UserDetailsServiceImpl userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
 
+    /**
+     * Configures the HTTP Security filter chain.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(
-                request -> request
-                        .requestMatchers("/journal/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
-        ).httpBasic(httpBasic -> httpBasic.disable());
-        http.csrf(Customizer -> Customizer.disable());
+        http
+                .csrf(csrf -> csrf.disable()) // Disable CSRF if not needed
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/journal/**", "/user/**").permitAll() // Publicly accessible endpoints
+                        .anyRequest().authenticated() // All other endpoints require authentication
+                )
+                .httpBasic(Customizer.withDefaults()); // Use HTTP Basic authentication
 
-        return http.build();   // return the exception securityFilterChain
+        return http.build();
     }
 
-    @Autowired
-    protected void configureGlobal(@org.jetbrains.annotations.NotNull AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-    }
-
+    /**
+     * Provides a bean for password encoding using BCrypt.
+     */
     @Bean
-    public PasswordEncoder passwordEncoder(){
-        return  new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
-//    @Bean
-//    public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
-//        return http.getSharedObject(AuthenticationManagerBuilder.class).build();
-//    }
-
-
-
-
+    /**
+     * Provides a bean for the AuthenticationManager.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
 }

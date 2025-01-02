@@ -7,25 +7,30 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUserName(username);
-        if(user != null){
-            UserDetails userDetails = org.springframework.security.core.userdetails.User
-                    .builder()
-                    .username(user.getUserName())
-                    .password(user.getPassword())
-                    .roles(user.getRoles().toArray(new String[0]))
-                    .build();
-            return userDetails;
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with userName: " + username);
         }
-        throw new UsernameNotFoundException("User not found with userName: " + username);
+
+        return org.springframework.security.core.userdetails.User
+                .builder()
+                .username(user.getUserName())
+                .password(user.getPassword()) // Password must be encoded in the database
+                .roles(user.getRoles().toArray(new String[0]))
+                .build();
     }
 }

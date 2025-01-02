@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping
     public void createUser(@RequestBody User user){
-        System.out.println(user);
+
         userService.saveEntry(user);
     }
 
