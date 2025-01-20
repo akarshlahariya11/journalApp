@@ -1,0 +1,12 @@
+# username = akarsh, password = munchkin
+# MongoDB Atlas connection URI
+#spring.data.mongodb.uri=#mongodb+srv://<db_username>:<db_password>@cluster0.zeeol.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+spring:
+  application:
+    name: Journal App
+  data:
+    mongodb:
+      uri: mongodb+srv://akarsh:munchkin@cluster0.zeeol.mongodb.net/journaldb?retryWrites=true&w=majority&appName=Cluster0
+      mongodb.auto-index-creation: true
+#logging.level.org.springframework.security=DEBUG

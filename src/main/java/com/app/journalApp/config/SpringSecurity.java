@@ -28,7 +28,8 @@ public class SpringSecurity {
         http
                 .csrf(csrf -> csrf.disable()) // Disable CSRF if not needed
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/journal/**", "/user/**").authenticated() // Publicly accessible endpoints
+                        .requestMatchers("/journal/**", "/user/**").authenticated()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")// Publicly accessible endpoints
                         .anyRequest().permitAll() // All other endpoints require authentication
                 )
                 .sessionManagement(session -> session.
